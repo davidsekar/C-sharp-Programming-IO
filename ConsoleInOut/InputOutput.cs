@@ -1,20 +1,17 @@
 ﻿namespace ConsoleInOut
 {
-    #region Input Output Helper
-    internal class InputOutput : System.IDisposable
+    #region Input Output Helper 
+    public class InputOutput : System.IDisposable
     {
         private System.IO.Stream STRRead, STRWrite;
         private int ReadIdx, InBuffSize, BytesRead, OutBuffSize, WriteIdx;
+        private byte[] INBuff, OUTBuff;
+        private bool bThrowErrorOnEOF = false;
 
-        private byte[] INBuff, OUTBuff; public InputOutput()
-
+        public InputOutput(bool throwEndOfInputsError = false)
         {
-            STRRead = System.Console.OpenStandardInput();
-            STRWrite = System.Console.OpenStandardOutput();
-            ReadIdx = BytesRead = WriteIdx = 0;
-            InBuffSize = OutBuffSize = 1 << 16;
-            INBuff = new byte[InBuffSize];
-            OUTBuff = new byte[OutBuffSize];
+            STRRead = System.Console.OpenStandardInput(); STRWrite = System.Console.OpenStandardOutput(); ReadIdx = BytesRead = WriteIdx = 0; InBuffSize = OutBuffSize = 1 << 22; INBuff = new byte[InBuffSize]; OUTBuff = new byte[OutBuffSize];
+            bThrowErrorOnEOF = throwEndOfInputsError;
         }
 
         public int ReadInt()
@@ -22,30 +19,19 @@
             byte _ReadByte;
             while (true)
             {
-                if (ReadIdx == BytesRead)
-                    ReadConsoleInput();
-                _ReadByte = INBuff[ReadIdx++];
-                if (_ReadByte < '-')
-                    continue;
-                else
-                    break;
+                _ReadByte = GetByte(); if (_ReadByte < '-') continue; else break;
             }
             bool neg = false;
             if (_ReadByte == '-')
             {
                 neg = true;
-                if (ReadIdx == BytesRead)
-                    ReadConsoleInput();
-                _ReadByte = INBuff[ReadIdx++];
+                _ReadByte = GetByte();
             }
             int m = _ReadByte - '0';
             while (true)
             {
-                if (ReadIdx == BytesRead)
-                    ReadConsoleInput();
-                _ReadByte = INBuff[ReadIdx++];
-                if (_ReadByte < '0')
-                    break;
+                _ReadByte = GetByte();
+                if (_ReadByte < '0') break;
                 m = m * 10 + (_ReadByte - '0');
             }
             return neg ? -m : m;
@@ -61,39 +47,36 @@
             byte _ReadByte;
             while (true)
             {
-                if (ReadIdx == BytesRead)
-                    ReadConsoleInput();
-                _ReadByte = INBuff[ReadIdx++];
-                if (_ReadByte >= delimiter)
-                    break;
+                _ReadByte = GetByte();
+                if (_ReadByte >= delimiter) break;
             }
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
             sb.Append((char)_ReadByte);
             while (true)
             {
-                if (ReadIdx == BytesRead)
-                    ReadConsoleInput();
-                _ReadByte = INBuff[ReadIdx++];
-                if (_ReadByte <= delimiter)
-                    break;
+                _ReadByte = GetByte();
+                if (_ReadByte <= delimiter) break;
                 sb.Append((char)_ReadByte);
             }
             return sb.ToString();
         }
+
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        private void ReadConsoleInput()
+        private byte GetByte()
         {
-            ReadIdx = 0;
-            BytesRead = STRRead.Read(INBuff, 0, InBuffSize);
-            if (BytesRead < 1)
-                INBuff[BytesRead++] = 32;
+            if (ReadIdx == BytesRead)
+            {
+                ReadIdx = 0;
+                BytesRead = STRRead.Read(INBuff, 0, InBuffSize);
+                if (BytesRead < 1)
+                {
+                    if (bThrowErrorOnEOF) throw new System.Exception("EOF");
+                    INBuff[BytesRead++] = 32;
+                }
+            }
+            return INBuff[ReadIdx++];
         }
 
-        //private static byte ReadByte()
-        //{
-        // if (ReadIdx == BytesRead) ReadConsoleInput();
-        // return INBuff[ReadIdx++];
-        //}
         public void Dispose()
         {
             Flush();
@@ -105,8 +88,7 @@
         {
             for (int i = 0; i < s.Length; i++)
             {
-                if (WriteIdx == OutBuffSize)
-                    Flush();
+                if (WriteIdx == OutBuffSize) Flush();
                 OUTBuff[WriteIdx++] = (byte)s[i];
             }
         }
@@ -114,32 +96,25 @@
         public void WriteLineToBuffer(string s)
         {
             WriteToBuffer(s);
-            if (WriteIdx == OutBuffSize)
-                Flush();
+            if (WriteIdx == OutBuffSize) Flush();
             OUTBuff[WriteIdx++] = (byte)10;
         }
-
         public void WriteToBuffer(int c)
         {
             byte[] temp = new byte[10];
             int Tempidx = 0;
             if (c < 0)
             {
-                if (WriteIdx == OutBuffSize)
-                    Flush();
-                OUTBuff[WriteIdx++] = (byte)'-';
-                c = -c;
+                if (WriteIdx == OutBuffSize) Flush(); OUTBuff[WriteIdx++] = (byte)'-'; c = -c;
             }
             do
             {
                 temp[Tempidx++] = (byte)((c % 10) + '0');
                 c /= 10;
-            }
-            while (c > 0);
+            } while (c > 0);
             for (int i = Tempidx - 1; i >= 0; i--)
             {
-                if (WriteIdx == OutBuffSize)
-                    Flush();
+                if (WriteIdx == OutBuffSize) Flush();
                 OUTBuff[WriteIdx++] = temp[i];
             }
         }
@@ -147,8 +122,7 @@
         public void WriteLineToBuffer(int c)
         {
             WriteToBuffer(c);
-            if (WriteIdx == OutBuffSize)
-                Flush();
+            if (WriteIdx == OutBuffSize) Flush();
             OUTBuff[WriteIdx++] = 10;
         }
 
@@ -159,5 +133,6 @@
             WriteIdx = 0;
         }
     }
-    #endregion Input Output Helper
+    #endregion Input Output Helper 
+
 }

@@ -3,36 +3,51 @@
     #region Input Output Helper 
     public class InputOutput : System.IDisposable
     {
-        private System.IO.Stream STRRead, STRWrite;
-        private int ReadIdx, InBuffSize, BytesRead, OutBuffSize, WriteIdx;
-        private byte[] INBuff, OUTBuff;
-        private bool bThrowErrorOnEOF = false;
+        private System.IO.Stream _readStream, _writeStream;
+        private int _readIdx, _bytesRead, _writeIdx, _inBuffSize, _outBuffSize;
+        private readonly byte[] _inBuff, _outBuff, _stringBytes;
+        private readonly bool _bThrowErrorOnEof;
+
+        public void SetBuffSize(int n)
+        {
+            _inBuffSize = _outBuffSize = n;
+        }
 
         public InputOutput(bool throwEndOfInputsError = false)
         {
-            STRRead = System.Console.OpenStandardInput(); STRWrite = System.Console.OpenStandardOutput(); ReadIdx = BytesRead = WriteIdx = 0; InBuffSize = OutBuffSize = 1 << 22; INBuff = new byte[InBuffSize]; OUTBuff = new byte[OutBuffSize];
-            bThrowErrorOnEOF = throwEndOfInputsError;
+            _readStream = System.Console.OpenStandardInput();
+            _writeStream = System.Console.OpenStandardOutput();
+            _readIdx = _bytesRead = _writeIdx = 0;
+            _inBuffSize = _outBuffSize = 1 << 22;
+            _inBuff = new byte[_inBuffSize];
+            _outBuff = new byte[_outBuffSize];
+            _bThrowErrorOnEof = throwEndOfInputsError;
+            _stringBytes = new byte[1000]; // Adjust based on problem req.
+        }
+
+        public void SetFilePath(string strPath)
+        {
+            strPath = System.IO.Path.GetFullPath(strPath);
+            _readStream = System.IO.File.Open(strPath, System.IO.FileMode.Open);
         }
 
         public int ReadInt()
         {
-            byte _ReadByte;
-            while (true)
-            {
-                _ReadByte = GetByte(); if (_ReadByte < '-') continue; else break;
-            }
-            bool neg = false;
-            if (_ReadByte == '-')
+            byte readByte;
+            while ((readByte = GetByte()) < '-') ;
+
+            var neg = false;
+            if (readByte == '-')
             {
                 neg = true;
-                _ReadByte = GetByte();
+                readByte = GetByte();
             }
-            int m = _ReadByte - '0';
+            var m = readByte - '0';
             while (true)
             {
-                _ReadByte = GetByte();
-                if (_ReadByte < '0') break;
-                m = m * 10 + (_ReadByte - '0');
+                readByte = GetByte();
+                if (readByte < '0') break;
+                m = m * 10 + (readByte - '0');
             }
             return neg ? -m : m;
         }
@@ -42,95 +57,96 @@
             return ReadString(' ');
         }
 
+        public string ReadString(string delimiter)
+        {
+            return ReadString(delimiter[0]);
+        }
+
         public string ReadString(char delimiter)
         {
-            byte _ReadByte;
-            while (true)
+            byte readByte;
+            while ((readByte = GetByte()) <= delimiter) ;
+
+            var strIdx = 0;
+
+            do
             {
-                _ReadByte = GetByte();
-                if (_ReadByte >= delimiter) break;
-            }
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            sb.Append((char)_ReadByte);
-            while (true)
-            {
-                _ReadByte = GetByte();
-                if (_ReadByte <= delimiter) break;
-                sb.Append((char)_ReadByte);
-            }
-            return sb.ToString();
+                _stringBytes[strIdx++] = readByte;
+            } while ((readByte = GetByte()) > delimiter);
+
+            return System.Text.Encoding.ASCII.GetString(_stringBytes, 0, strIdx);
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         private byte GetByte()
         {
-            if (ReadIdx == BytesRead)
+            if (_readIdx >= _bytesRead)
             {
-                ReadIdx = 0;
-                BytesRead = STRRead.Read(INBuff, 0, InBuffSize);
-                if (BytesRead < 1)
-                {
-                    if (bThrowErrorOnEOF) throw new System.Exception("EOF");
-                    INBuff[BytesRead++] = 32;
-                }
-            }
-            return INBuff[ReadIdx++];
-        }
+                _readIdx = 0;
+                _bytesRead = _readStream.Read(_inBuff, 0, _inBuffSize);
+                if (_bytesRead >= 1) return _inBuff[_readIdx++];
 
-        public void Dispose()
-        {
-            Flush();
-            STRWrite.Close();
-            STRRead.Close();
+                if (_bThrowErrorOnEof) throw new System.Exception("End Of Input");
+                _inBuff[_bytesRead++] = 0;
+            }
+            return _inBuff[_readIdx++];
         }
 
         public void WriteToBuffer(string s)
         {
-            for (int i = 0; i < s.Length; i++)
+            foreach (var b in System.Text.Encoding.ASCII.GetBytes(s))
             {
-                if (WriteIdx == OutBuffSize) Flush();
-                OUTBuff[WriteIdx++] = (byte)s[i];
+                if (_writeIdx == _outBuffSize) Flush();
+                _outBuff[_writeIdx++] = b;
             }
         }
 
         public void WriteLineToBuffer(string s)
         {
             WriteToBuffer(s);
-            if (WriteIdx == OutBuffSize) Flush();
-            OUTBuff[WriteIdx++] = (byte)10;
+            if (_writeIdx == _outBuffSize) Flush();
+            _outBuff[_writeIdx++] = 10;
         }
+
         public void WriteToBuffer(int c)
         {
             byte[] temp = new byte[10];
-            int Tempidx = 0;
+            int tempidx = 0;
             if (c < 0)
             {
-                if (WriteIdx == OutBuffSize) Flush(); OUTBuff[WriteIdx++] = (byte)'-'; c = -c;
+                if (_writeIdx == _outBuffSize) Flush(); _outBuff[_writeIdx++] = (byte)'-'; c = -c;
             }
             do
             {
-                temp[Tempidx++] = (byte)((c % 10) + '0');
+                temp[tempidx++] = (byte)((c % 10) + '0');
                 c /= 10;
             } while (c > 0);
-            for (int i = Tempidx - 1; i >= 0; i--)
+            for (int i = tempidx - 1; i >= 0; i--)
             {
-                if (WriteIdx == OutBuffSize) Flush();
-                OUTBuff[WriteIdx++] = temp[i];
+                if (_writeIdx == _outBuffSize) Flush();
+                _outBuff[_writeIdx++] = temp[i];
             }
         }
 
         public void WriteLineToBuffer(int c)
         {
             WriteToBuffer(c);
-            if (WriteIdx == OutBuffSize) Flush();
-            OUTBuff[WriteIdx++] = 10;
+            if (_writeIdx == _outBuffSize) Flush();
+            _outBuff[_writeIdx++] = 10;
         }
 
         private void Flush()
         {
-            STRWrite.Write(OUTBuff, 0, WriteIdx);
-            STRWrite.Flush();
-            WriteIdx = 0;
+            _writeStream.Write(_outBuff, 0, _writeIdx);
+            _writeStream.Flush();
+            _writeIdx = 0;
+        }
+
+        public void Dispose()
+        {
+            Flush();
+            _writeStream.Close();
+            _readStream.Close();
         }
     }
     #endregion Input Output Helper 

@@ -5,7 +5,7 @@
     {
         private System.IO.Stream _readStream, _writeStream;
         private int _readIdx, _bytesRead, _writeIdx, _inBuffSize, _outBuffSize;
-        private readonly byte[] _inBuff, _outBuff, _stringBytes;
+        private readonly byte[] _inBuff, _outBuff;
         private readonly bool _bThrowErrorOnEof;
 
         public void SetBuffSize(int n)
@@ -22,7 +22,6 @@
             _inBuff = new byte[_inBuffSize];
             _outBuff = new byte[_outBuffSize];
             _bThrowErrorOnEof = throwEndOfInputsError;
-            _stringBytes = new byte[1000]; // Adjust based on problem req.
         }
 
         public void SetFilePath(string strPath)
@@ -67,14 +66,13 @@
             byte readByte;
             while ((readByte = GetByte()) <= delimiter) ;
 
-            var strIdx = 0;
+			System.Text.StringBuilder sb = new System.Text.StringBuilder();
+			do
+			{
+				sb.Append((char)readByte);
+			} while ((readByte = GetByte()) > delimiter);
 
-            do
-            {
-                _stringBytes[strIdx++] = readByte;
-            } while ((readByte = GetByte()) > delimiter);
-
-            return System.Text.Encoding.ASCII.GetString(_stringBytes, 0, strIdx);
+            return sb.ToString();
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

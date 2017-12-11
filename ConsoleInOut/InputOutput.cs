@@ -1,4 +1,6 @@
-﻿namespace ConsoleInOut
+﻿using System;
+
+namespace ConsoleInOut
 {
     #region Input Output Helper 
     public class InputOutput : System.IDisposable
@@ -28,6 +30,27 @@
         {
             strPath = System.IO.Path.GetFullPath(strPath);
             _readStream = System.IO.File.Open(strPath, System.IO.FileMode.Open);
+        }
+
+        public T ReadNumber<T>()
+        {
+            byte rb;
+            while ((rb = GetByte()) < '-') ;
+
+            var neg = false;
+            if (rb == '-')
+            {
+                neg = true;
+                rb = GetByte();
+            }
+            dynamic m = (T)Convert.ChangeType(rb - '0', typeof(T));
+            while (true)
+            {
+                rb = GetByte();
+                if (rb < '0') break;
+                m = m * 10 + (rb - '0');
+            }
+            return neg ? -m : m;
         }
 
         public int ReadInt()

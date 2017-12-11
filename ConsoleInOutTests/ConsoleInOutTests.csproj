@@ -71,6 +71,8 @@
   <ItemGroup>
     <Content Include="testdata\in1.txt" />
     <Content Include="testdata\in2.txt" />
+    <Content Include="testdata\in3.txt" />
+    <Content Include="testdata\in4.txt" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

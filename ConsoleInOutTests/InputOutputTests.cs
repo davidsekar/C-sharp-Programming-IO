@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace ConsoleInOut.Tests
 {
@@ -100,6 +101,70 @@ namespace ConsoleInOut.Tests
 
                 Assert.ThrowsException<Exception>(() => io.ReadInt());
             }
+        }
+
+        [TestMethod]
+        public void TestGenericInt()
+        {
+            var inputFilePath = "../../testdata/in3.txt";
+            string[] expected = File.ReadAllLines(inputFilePath);
+            using (var io = new InputOutput())
+            {
+                io.SetBuffSize(3);
+                io.SetFilePath(inputFilePath);
+                foreach (var ex in expected)
+                {
+                    Assert.AreEqual(ex, io.ReadNumber<decimal>() + "");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void Test_Generic_Number_Rd_Speed()
+        {
+            Stopwatch sw = new Stopwatch();
+            var inputFilePath = "../../testdata/in3.txt";
+            sw.Start();
+            using (var io = new InputOutput(true))
+            {
+                io.SetBuffSize(3);
+                io.SetFilePath(inputFilePath);
+                while (true)
+                {
+                    try
+                    {
+                        io.ReadInt();
+                    }
+                    catch
+                    {
+                        break;
+                    }
+                }
+            }
+            sw.Stop();
+            long elapsed1 = sw.ElapsedMilliseconds;
+
+            sw.Restart();
+            using (var io = new InputOutput(true))
+            {
+                io.SetBuffSize(3);
+                io.SetFilePath(inputFilePath);
+                while (true)
+                {
+                    try
+                    {
+                        io.ReadNumber<int>();
+                    }
+                    catch
+                    {
+                        break;
+                    }
+                }
+            }
+            sw.Stop();
+            long elapsed2 = sw.ElapsedMilliseconds;
+
+            Assert.IsTrue(elapsed1 <= elapsed2, "Normal: " + elapsed1 + "ms; Generic " + elapsed2 + "ms");
         }
     }
 }

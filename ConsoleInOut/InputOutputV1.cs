@@ -92,7 +92,6 @@ namespace ConsoleInOut
             return sb.ToString();
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         private static byte GetByte()
         {
             if (_readIdx >= _bytesRead)
@@ -160,7 +159,8 @@ namespace ConsoleInOut
         public static void Flush()
         {
             InternalFlush();
-            if (_readStream != null) _readStream.Close();
+            _readStream.Close();
+            _writeStream.Close();
             ThrowErrorOnEof = false;
         }
     }

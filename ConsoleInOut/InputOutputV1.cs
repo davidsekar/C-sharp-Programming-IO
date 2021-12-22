@@ -1,15 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Text;
-
-namespace ConsoleInOut
+﻿namespace ConsoleInOut
 {
     #region Input Output Helper
 
     public static class InputOutputV1
     {
-        private static Stream _readStream = Console.OpenStandardInput();
-        private static readonly Stream _writeStream = Console.OpenStandardOutput();
+        private static System.IO.Stream _readStream = System.Console.OpenStandardInput();
+        private static readonly System.IO.Stream _writeStream = System.Console.OpenStandardOutput();
         private const int BUFF_Size = 1 << 16;
         private static int _readIdx = 0, _bytesRead = 0, _writeIdx = 0, _inBuffSize = BUFF_Size, _outBuffSize = BUFF_Size;
         private static readonly byte[] _inBuff = new byte[_inBuffSize], _outBuff = new byte[_outBuffSize];
@@ -22,8 +18,8 @@ namespace ConsoleInOut
 
         public static void SetFilePath(string strPath)
         {
-            strPath = Path.GetFullPath(strPath);
-            _readStream = File.Open(strPath, FileMode.Open);
+            strPath = System.IO.Path.GetFullPath(strPath);
+            _readStream = new System.IO.FileStream(strPath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
         }
 
         public static T ReadNumber<T>()
@@ -37,7 +33,7 @@ namespace ConsoleInOut
                 neg = true;
                 rb = GetByte();
             }
-            dynamic m = (T)Convert.ChangeType(rb - '0', typeof(T));
+            dynamic m = (T)System.Convert.ChangeType(rb - '0', typeof(T));
             while (true)
             {
                 rb = GetByte();
@@ -83,7 +79,7 @@ namespace ConsoleInOut
             byte readByte;
             while ((readByte = GetByte()) <= delimiter) ;
 
-            var sb = new StringBuilder();
+            var sb = new System.Text.StringBuilder();
             do
             {
                 sb.Append((char)readByte);
@@ -159,8 +155,8 @@ namespace ConsoleInOut
         public static void Flush()
         {
             InternalFlush();
-            _readStream.Close();
-            _writeStream.Close();
+            //_readStream.Close();
+            //_writeStream.Close();
             ThrowErrorOnEof = false;
         }
     }

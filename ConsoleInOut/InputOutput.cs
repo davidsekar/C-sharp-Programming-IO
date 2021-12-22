@@ -2,7 +2,8 @@
 
 namespace ConsoleInOut
 {
-    #region Input Output Helper 
+    #region Input Output Helper
+
     public class InputOutput : System.IDisposable
     {
         private System.IO.Stream _readStream, _writeStream;
@@ -29,7 +30,7 @@ namespace ConsoleInOut
         public void SetFilePath(string strPath)
         {
             strPath = System.IO.Path.GetFullPath(strPath);
-            _readStream = System.IO.File.Open(strPath, System.IO.FileMode.Open);
+            _readStream = new System.IO.FileStream(strPath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
         }
 
         public T ReadNumber<T>()
@@ -89,11 +90,11 @@ namespace ConsoleInOut
             byte readByte;
             while ((readByte = GetByte()) <= delimiter) ;
 
-			System.Text.StringBuilder sb = new System.Text.StringBuilder();
-			do
-			{
-				sb.Append((char)readByte);
-			} while ((readByte = GetByte()) > delimiter);
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            do
+            {
+                sb.Append((char)readByte);
+            } while ((readByte = GetByte()) > delimiter);
 
             return sb.ToString();
         }
@@ -170,6 +171,6 @@ namespace ConsoleInOut
             _readStream.Close();
         }
     }
-    #endregion Input Output Helper 
 
+    #endregion Input Output Helper
 }

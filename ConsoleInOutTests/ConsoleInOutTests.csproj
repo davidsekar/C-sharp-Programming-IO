@@ -57,6 +57,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="InputOutputV1Tests.cs" />
+    <Compile Include="InputOutputV3Tests.cs" />
+    <Compile Include="InputOutputV2Tests.cs" />
     <Compile Include="InputOutputTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

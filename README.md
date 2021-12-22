@@ -10,7 +10,11 @@ InputOutput1.cs - Implementation that declares everything as static to avoid ove
 InputOutput2.cs - Static implementation with unsafe pointers to save few additional ticks
 InputOutput3.cs - Static implementation with Buffered stream
 
-I have tested and it looks like InputOutput2 is fastest, but I prefer InputOutput3 which is as fast as unsafe implementation with pre-defined buffer support.
+Sorted By Speed:
+1. InputOutput2 is the fastest and you can use it in judges that has allow unsafe turned on.
+2. InputOutput1
+3. InputOutput
+4. InputOutput3 - Code looks cleaner but it performs slow due to additional checks provided by .NET framework
 
 Please feel free to raise a pull request for modification.
 

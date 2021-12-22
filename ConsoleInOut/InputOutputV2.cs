@@ -6,6 +6,7 @@
     {
         private const byte _minus = (byte)'-';
         private const byte _zero = (byte)'0';
+        private const byte _newLine = 10;
         private static System.IO.Stream _readStream, _writeStream;
         private const int BUFF_Size = 1 << 22;
         private static int _readIdx = 0, _bytesRead = 0, _writeIdx = 0, _inBuffSize = BUFF_Size, _outBuffSize = BUFF_Size;
@@ -131,7 +132,7 @@
             fixed (byte* ptr = _outBuff)
             {
                 foreach (var b in System.Text.Encoding.ASCII.GetBytes(s)) WriteByte(ptr, b);
-                if (newLine) WriteByte(ptr, 10);
+                if (newLine) WriteByte(ptr, _newLine);
             }
         }
 
@@ -155,6 +156,7 @@
                     } while (c > 0);
                     for (int i = tempidx - 1; i >= 0; i--) WriteByte(ptr, *(tempPtr + i));
                 }
+                if (newLine) WriteByte(ptr, _newLine);
             }
         }
 

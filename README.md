@@ -6,8 +6,11 @@ This code is used for best solutions for C# language in SPOJ site for
 #Enormous Input and Output Test http://www.spoj.com/problems/INOUTEST/
 
 InputOutput.cs - Initial implementation with custom buffer and Disposable support
+
 InputOutput1.cs - Implementation that declares everything as static to avoid overhead due to object initialization and dispose
+
 InputOutput2.cs - Static implementation with unsafe pointers to save few additional ticks
+
 InputOutput3.cs - Static implementation with Buffered stream
 
 Sorted By Speed:
